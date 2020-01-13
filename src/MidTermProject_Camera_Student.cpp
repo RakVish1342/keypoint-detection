@@ -38,6 +38,9 @@ int main(int argc, const char *argv[])
     // misc
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
+    // vector<DataFrame> dataBuffer(dataBufferSize); // list of data frames which are held in memory at the same time
+    vector<int> vec(2);
+
     bool bVis = false;            // visualize results
 
     /* MAIN LOOP OVER ALL IMAGES */
@@ -59,10 +62,31 @@ int main(int argc, const char *argv[])
         //// STUDENT ASSIGNMENT
         //// TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
 
+
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
+        // Needs to only hold two images since a constant velocity model is being used. 
+        // Else might need upto 3 or more (if acceleration etc model are used).
+        std::cout << "SIZE: " << dataBuffer.size() << std::endl;
+        // dataBuffer[1] = dataBuffer[0];
+        vec[1] = vec[0];
+        std::cout << "******" << std::endl;
+
+        // dataBuffer[0] = frame;
+        vec[0] = imgIndex;
+        std::cout << "-------" << std::endl;
+
+        for (std::size_t i = 0; i<vec.size(); ++i)
+        {
+            std::cout << vec[i] << std::endl;
+        }
+
         dataBuffer.push_back(frame);
+        if (dataBuffer.size() > dataBufferSize)
+        {
+            dataBuffer.erase(dataBuffer.end());
+        }
 
         //// EOF STUDENT ASSIGNMENT
         cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
@@ -164,11 +188,15 @@ int main(int argc, const char *argv[])
             if (bVis)
             {
                 cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
+
                 cv::drawMatches((dataBuffer.end() - 2)->cameraImg, (dataBuffer.end() - 2)->keypoints,
                                 (dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->keypoints,
                                 matches, matchImg,
                                 cv::Scalar::all(-1), cv::Scalar::all(-1),
                                 vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+                std::cout << "@@@@" << std::endl;
+
 
                 string windowName = "Matching keypoints between two camera images";
                 cv::namedWindow(windowName, 7);
