@@ -15,13 +15,51 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
     if (matcherType.compare("MAT_BF") == 0)
     {
-        int normType = cv::NORM_HAMMING;
+        int normType;
+
+        // for SIFT
+        if (descriptorType.compare("DES_HOG") == 0)
+        {
+            normType = cv::NORM_L2;
+        }
+        // for any other binary descriptors
+        else if (descriptorType.compare("DES_BINARY") == 0)
+        {
+            normType = cv::NORM_HAMMING;
+        }
+        else 
+        {
+            std::cout << "NOT SUPORTED" << std::endl;
+        }
+
         matcher = cv::BFMatcher::create(normType, crossCheck);
     }
+
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        // ...
+        // for SIFT
+        if (descriptorType.compare("DES_HOG") == 0)
+        {
+            matcher = cv::FlannBasedMatcher::create();
+        }
+        // for any other binary descriptorTypes
+        else if (descriptorType.compare("DES_BINARY") == 0)
+        {
+            const cv::Ptr<cv::flann::IndexParams>& indexParams = cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2);
+            matcher = cv::makePtr<cv::FlannBasedMatcher>(indexParams);
+        }
+        else 
+        {
+            std::cout << "NOT SUPORTED" << std::endl;
+        }
     }
+    else 
+    {
+        std::cout << "NOT SUPORTED" << std::endl;
+    }
+
+
+
 
     // perform matching task
     if (selectorType.compare("SEL_NN") == 0)
@@ -50,12 +88,31 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
 
         extractor = cv::BRISK::create(threshold, octaves, patternScale);
     }
+    else if (descriptorType.compare("BRIEF") == 0)
+    {
+        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
+    }
+    else if (descriptorType.compare("ORB") == 0)
+    {
+        extractor = cv::ORB::create();
+    }
+    else if (descriptorType.compare("FREAK") == 0)
+    {
+        extractor = cv::xfeatures2d::FREAK::create();
+    }
+    else if (descriptorType.compare("AKAZE") == 0)
+    {
+        extractor = cv::AKAZE::create();
+    }
+    else if (descriptorType.compare("SIFT") == 0)
+    {
+        extractor = cv::xfeatures2d::SIFT::create();
+    }
     else
     {
-
-        //...
+       std::cout << "NOT SUPORTED" << std::endl;
     }
-
+    
     // perform feature description
     double t = (double)cv::getTickCount();
     extractor->compute(img, keypoints, descriptors);

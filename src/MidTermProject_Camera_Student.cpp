@@ -118,12 +118,19 @@ int main(int argc, const char *argv[])
 
         // only keep keypoints on the preceding vehicle
         bool bFocusOnVehicle = true;
+        vector<cv::KeyPoint> vehicleKeypoints;
         cv::Rect vehicleRect(535, 180, 180, 150);
         if (bFocusOnVehicle)
         {
-            // ...
+            for (cv::KeyPoint kp : keypoints)
+            {
+                if(vehicleRect.contains(kp.pt))
+                {
+                    vehicleKeypoints.push_back(kp);
+                }
+            }
+            keypoints = vehicleKeypoints;
         }
-
         //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
@@ -151,7 +158,9 @@ int main(int argc, const char *argv[])
         //// -> BRIEF, ORB, FREAK, AKAZE, SIFT
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        //string descriptorType = "BRIEF"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = "FREAK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
         //// EOF STUDENT ASSIGNMENT
 
@@ -166,8 +175,10 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
+            // string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
+            string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
             string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+            //string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
