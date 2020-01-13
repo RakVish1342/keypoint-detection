@@ -1,6 +1,8 @@
 #include <numeric>
 #include "matching2D.hpp"
 
+#include <typeinfo>
+
 using namespace std;
 
 // Find best matches for keypoints in two camera images based on several matching methods
@@ -140,6 +142,51 @@ void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         string windowName = "Harris Corner Detector Results";
         cv::namedWindow(windowName, 6);
         imshow(windowName, visImage);
+        cv::waitKey(0);
+    }
+}
+
+void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std::string detectorType, bool bVis)
+{
+    //Output variable type found from the doxygen doc for most algos. 
+    // eg1. https://docs.opencv.org/3.4/d5/d51/group__features2d__main.html
+    // eg2. https://docs.opencv.org/3.4/df/d74/classcv_1_1FastFeatureDetector.html
+    // For Sift, doxygen is old I guess? Used the return type mentioned in this example: https://github.com/oreillymedia/Learning-OpenCV-3_examples/blob/master/example_16-02.cpp
+    // Or can use auto. Works functionally, but not easily readable.
+    if (detectorType.compare("FAST") == 0)
+    {
+        cv::Ptr<cv::FastFeatureDetector> fast = cv::FastFeatureDetector::create();
+        fast->detect(img, keypoints);
+    }
+    else if (detectorType.compare("BRISK") == 0) 
+    {
+        cv::Ptr<cv::BRISK> brisk = cv::BRISK::create();
+        brisk->detect(img, keypoints);
+    }
+    else if (detectorType.compare("ORB") == 0) 
+    {
+        cv::Ptr<cv::ORB> orb = cv::ORB::create();
+        orb->detect(img, keypoints);
+    }
+    else if (detectorType.compare("AKAZE") == 0) 
+    {
+        cv::Ptr<cv::AKAZE> akaze = cv::AKAZE::create();
+        akaze->detect(img, keypoints);
+    }
+    else if (detectorType.compare("SIFT") == 0) 
+    {
+        cv::Ptr<cv::Feature2D> sift = cv::xfeatures2d::SIFT::create();
+        sift->detect(img, keypoints);
+    }
+
+    // visualize results
+    if (bVis)
+    {
+        cv::Mat visImage = img.clone();
+        cv::drawKeypoints(img, keypoints, visImage, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        string windowName = detectorType + " Detection Results";
+        cv::namedWindow(windowName, 6);
+        cv::imshow(windowName, visImage);
         cv::waitKey(0);
     }
 }
