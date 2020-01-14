@@ -43,6 +43,8 @@ int main(int argc, const char *argv[])
 
     vector<string> detVec = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descVec = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
+    //Akaze as a Descriptor doesn't work with any detectors apart from itself
+    //SIFT and ORB go out of memory
 
     // Taking various combos of detector and descriptors:
     for (string detectorType : detVec)
@@ -51,6 +53,20 @@ int main(int argc, const char *argv[])
         {    
             for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
             {
+                //Akaze as a Descriptor doesn't work with any detectors apart from itself
+                //SIFT and ORB go out of memory (Too many points picked up)
+                if ( !(detectorType.compare("AKAZE")==0)&&(descriptorType.compare("AKAZE")==0) ||
+                     (detectorType.compare("SIFT")==0)&&(descriptorType.compare("ORB")==0) )
+                {
+                    std::cout << "Skipping...";
+                    std::cout << "Using: " << detectorType << ", " << descriptorType << std::endl;    
+                    break;
+                }
+
+                //Also, On continuation of the loop, randomly it crashes for a new descriptorType. 
+                //But works when run independently with that descriptor.
+                //Check variable states. Ensure they are reinitialized correctly.
+
                 std::cout << "Using: " << detectorType << ", " << descriptorType << std::endl;
                 /* LOAD IMAGE INTO BUFFER */
                 // assemble filenames for current index
@@ -145,7 +161,6 @@ int main(int argc, const char *argv[])
                 (dataBuffer.end() - 1)->keypoints = keypoints;
                 // cout << "#2 : DETECT KEYPOINTS done" << endl;
 
-
                 /* EXTRACT KEYPOINT DESCRIPTORS */
                 cv::Mat descriptors;
                 // string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
@@ -160,6 +175,8 @@ int main(int argc, const char *argv[])
                 keyTime += descKeypoints((dataBuffer.end() - 1)->keypoints, 
                                         (dataBuffer.end() - 1)->cameraImg, 
                                         descriptors, descriptorType);
+
+
 
                 // push descriptors for current frame to end of data buffer
                 (dataBuffer.end() - 1)->descriptors = descriptors;
@@ -177,6 +194,8 @@ int main(int argc, const char *argv[])
                     // string descriptorCategory = "DES_BINARY"; // DES_BINARY, DES_HOG
                     // string descriptorCategory = "DES_HOG";
                     string descriptorCategory;
+
+                    //if ( (descriptorType.compare("SIFT") == 0) || (descriptorType.compare("AKAZE") == 0) )
                     if (descriptorType.compare("SIFT") == 0)
                     {
                         descriptorCategory = "DES_HOG";
