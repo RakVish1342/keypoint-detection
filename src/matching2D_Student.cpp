@@ -58,8 +58,12 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     if (selectorType.compare("SEL_NN") == 0)
     { // nearest neighbor (best match)
 
+        std::cout << "###" << std::endl;
+        // std::cout << matches.distance << std::endl;
+        std::cout << descSource.size() << std::endl;
+        std::cout << descRef.size() << std::endl;
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
-        //std::cout << "###" << std::endl;
+        std::cout << "###" << std::endl;
     }
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)

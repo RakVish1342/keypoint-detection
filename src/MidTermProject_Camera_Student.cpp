@@ -185,7 +185,7 @@ int main(int argc, const char *argv[])
             Aborted (core dumped)
         */
         // string descriptorType = "AKAZE"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        //SIFT detector with SIFT descriptor currently throwing this error:
+        // SIFT detector with SIFT descriptor currently throwing this error:
         /*
             root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
             #1 : LOAD IMAGE INTO BUFFER done
@@ -201,9 +201,14 @@ int main(int argc, const char *argv[])
 
             Aborted (core dumped)
 
+            SOLVED: https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
+            Can't use Hamming/Binary descriptor matching technique for SIFT and SURF. 
+            Have to set string descriptorType = "DES_HOG"; NOT string descriptorType = "DES_BINARY";
         */
         string descriptorType = "SIFT"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        // std::cout << "###" << std::endl;
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
+        // std::cout << "###" << std::endl;
         //// EOF STUDENT ASSIGNMENT
 
         // push descriptors for current frame to end of data buffer
@@ -219,8 +224,8 @@ int main(int argc, const char *argv[])
             vector<cv::DMatch> matches;
             string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
             //string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            //string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
+            //string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+            string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
