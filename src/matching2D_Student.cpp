@@ -37,12 +37,11 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        //std::cout << descSource.type() << std::endl;
+        // Has its own method of matching. Doesn't depend on DES_HOG/DES_BINARY
         if (descSource.type() != CV_32F || descRef.type() != CV_32F)
-        { // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
+        {   // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
             descSource.convertTo(descSource, CV_32F);
             descRef.convertTo(descRef, CV_32F);
-            //std::cout << ">>>>>>>>>>HIT" << std::endl;
         }
         matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
     }
@@ -54,14 +53,8 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
     // perform matching task
     if (selectorType.compare("SEL_NN") == 0)
-    { // nearest neighbor (best match)
-
-        // std::cout << "###" << std::endl;
-        // std::cout << matches.distance << std::endl;
-        std::cout << descSource.size() << std::endl;
-        std::cout << descRef.size() << std::endl;
+    {   // nearest neighbor (best match)
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
-        // std::cout << "###" << std::endl;
     }
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)
@@ -172,6 +165,7 @@ void detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool b
 void detKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis)
 {
     // Same as Shi-Tomasi but with Harris flag set to true in cv::goodFeaturesToTrack()
+    // OR can use cv::HarrisCorner() method directly
 
     // compute detector parameters based on image size
     int blockSize = 4;       //  size of an average block for computing a derivative covariation matrix over each pixel neighborhood

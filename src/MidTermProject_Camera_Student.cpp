@@ -42,11 +42,9 @@ int main(int argc, const char *argv[])
     bool bVis = false;            // visualize results
 
     /* MAIN LOOP OVER ALL IMAGES */
-
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
     {
         /* LOAD IMAGE INTO BUFFER */
-
         // assemble filenames for current index
         ostringstream imgNumber;
         imgNumber << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex;
@@ -57,10 +55,7 @@ int main(int argc, const char *argv[])
         img = cv::imread(imgFullFilename);
         cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
 
-        //// STUDENT ASSIGNMENT
-        //// TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
-
-
+        /* Ring Buffer Implementation */
         // push image into data frame buffer
         DataFrame frame;
         frame.cameraImg = imgGray;
@@ -71,25 +66,19 @@ int main(int argc, const char *argv[])
         {
             dataBuffer.erase(dataBuffer.end());
         }
-
-        //// EOF STUDENT ASSIGNMENT
         cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
-        /* DETECT IMAGE KEYPOINTS */
 
+        /* DETECT IMAGE KEYPOINTS */
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        // string detectorType = "SHITOMASI";
+        string detectorType = "SHITOMASI";
         //  string detectorType = "HARRIS";
         // string detectorType = "FAST";
         // string detectorType = "BRISK";
         // string detectorType = "ORB";
         // string detectorType = "AKAZE";
-        string detectorType = "SIFT";
-
-        //// STUDENT ASSIGNMENT
-        //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
-        //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
+        // string detectorType = "SIFT";
 
         if (detectorType.compare("SHITOMASI") == 0)
         {
@@ -111,11 +100,9 @@ int main(int argc, const char *argv[])
         {
             std::cout << "NOT SUPORTED" << std::endl;
         }
-        //// EOF STUDENT ASSIGNMENT
 
-        //// STUDENT ASSIGNMENT
-        //// TASK MP.3 -> only keep keypoints on the preceding vehicle
 
+        /* Maintaining keypoints of vehicle only */
         // only keep keypoints on the preceding vehicle
         bool bFocusOnVehicle = true;
         vector<cv::KeyPoint> vehicleKeypoints;
@@ -131,7 +118,6 @@ int main(int argc, const char *argv[])
             }
             keypoints = vehicleKeypoints;
         }
-        //// EOF STUDENT ASSIGNMENT
 
         // optional : limit number of keypoints (helpful for debugging and learning)
         bool bLimitKpts = false;
@@ -151,97 +137,43 @@ int main(int argc, const char *argv[])
         (dataBuffer.end() - 1)->keypoints = keypoints;
         cout << "#2 : DETECT KEYPOINTS done" << endl;
 
+
         /* EXTRACT KEYPOINT DESCRIPTORS */
-
-        //// STUDENT ASSIGNMENT
-        //// TASK MP.4 -> add the following descriptors in file matching2D.cpp and enable string-based selection based on descriptorType
-        //// -> BRIEF, ORB, FREAK, AKAZE, SIFT
-
         cv::Mat descriptors;
-        //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         //string descriptorType = "BRIEF"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        // When SIFT detector and ORB Descriptor are used. OUT OF MEMORY runtime error appears!!
-        /*
-            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
-            #1 : LOAD IMAGE INTO BUFFER done
-            #2 : DETECT KEYPOINTS done
-            terminate called after throwing an instance of 'cv::Exception'
-            what():  OpenCV(4.1.0) /opencv/modules/core/src/alloc.cpp:55: error: (-4:Insufficient memory) Failed to allocate 70166064384 bytes in function 'OutOfMemoryError'
-
-            Aborted (core dumped)
-        */
-        // When using ORB and ORB its fine
+        // Check NOTE 1
         //string descriptorType = "ORB"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         // string descriptorType = "FREAK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        // Simlarly, when SIFT/ORB detectors are used with AKAZE descriptor, error appear
-        // Works fine when both are AKAZE 
-        /*
-            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
-            #1 : LOAD IMAGE INTO BUFFER done
-            #2 : DETECT KEYPOINTS done
-            terminate called after throwing an instance of 'cv::Exception'
-            what():  OpenCV(4.1.0) /opencv/modules/features2d/src/kaze/AKAZEFeatures.cpp:1192: error: (-215:Assertion failed) 0 <= kpts[i].class_id && kpts[i].class_id < static_cast<int>(evolution_.size()) in function 'Compute_Descriptors'
-
-            Aborted (core dumped)
-        */
+        // Check NOTE 2
         // string descriptorType = "AKAZE"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        // SIFT detector with SIFT descriptor currently throwing this error:
-        /*
-            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
-            #1 : LOAD IMAGE INTO BUFFER done
-            #2 : DETECT KEYPOINTS done
-            SIFT descriptor extraction in 107.006 ms
-            #3 : EXTRACT DESCRIPTORS done
-            #1 : LOAD IMAGE INTO BUFFER done
-            #2 : DETECT KEYPOINTS done
-            SIFT descriptor extraction in 78.1693 ms
-            #3 : EXTRACT DESCRIPTORS done
-            terminate called after throwing an instance of 'cv::Exception'
-            what():  OpenCV(4.1.0) /opencv/modules/core/src/batch_distance.cpp:282: error: (-215:Assertion failed) (type == CV_8U && dtype == CV_32S) || dtype == CV_32F in function 'batchDistance'
-
-            Aborted (core dumped)
-
-            SOLVED: https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
-            Can't use Hamming/Binary descriptor matching technique for SIFT and SURF. 
-            Have to set string descriptorType = "DES_HOG"; NOT string descriptorType = "DES_BINARY";
-        */
-        string descriptorType = "SIFT"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        // std::cout << "###" << std::endl;
+        // Check NOTE 3
+        // string descriptorType = "SIFT"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
-        // std::cout << "###" << std::endl;
-        //// EOF STUDENT ASSIGNMENT
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-
         cout << "#3 : EXTRACT DESCRIPTORS done" << endl;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
 
             /* MATCH KEYPOINT DESCRIPTORS */
-
             vector<cv::DMatch> matches;
             string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
             //string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
-            //string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
-            // string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
-            string selectorType = "SEL_KNN";       // SEL_NN, SEL_KNN
-
-            //// STUDENT ASSIGNMENT
-            //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
-            //// TASK MP.6 -> add KNN match selection and perform descriptor distance ratio filtering with t=0.8 in file matching2D.cpp
+            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+            // string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
+            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+            // string selectorType = "SEL_KNN";       // SEL_NN, SEL_KNN
 
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
                              matches, descriptorType, matcherType, selectorType);
 
-            //// EOF STUDENT ASSIGNMENT
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
-
             cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
             // visualize matches between current and previous image
@@ -256,8 +188,7 @@ int main(int argc, const char *argv[])
                                 cv::Scalar::all(-1), cv::Scalar::all(-1),
                                 vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-                std::cout << "@@@@" << std::endl;
-
+                std::cout << "----------" << std::endl;
 
                 string windowName = "Matching keypoints between two camera images";
                 cv::namedWindow(windowName, 7);
@@ -272,3 +203,58 @@ int main(int argc, const char *argv[])
 
     return 0;
 }
+
+
+
+
+// Debug Notes:
+
+// NOTE 1:
+// When SIFT detector and ORB Descriptor are used. OUT OF MEMORY runtime error appears!!
+// Is fine if both ORB detector and descriptor are used.
+/*
+    root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+    #1 : LOAD IMAGE INTO BUFFER done
+    #2 : DETECT KEYPOINTS done
+    terminate called after throwing an instance of 'cv::Exception'
+    what():  OpenCV(4.1.0) /opencv/modules/core/src/alloc.cpp:55: error: (-4:Insufficient memory) Failed to allocate 70166064384 bytes in function 'OutOfMemoryError'
+
+    Aborted (core dumped)
+*/
+
+// NOTE 2:
+// When using ORB and ORB its fine
+
+        // Simlarly, when SIFT/ORB detectors are used with AKAZE descriptor, error appear
+        // Works fine when both are AKAZE 
+        /*
+            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+            #1 : LOAD IMAGE INTO BUFFER done
+            #2 : DETECT KEYPOINTS done
+            terminate called after throwing an instance of 'cv::Exception'
+            what():  OpenCV(4.1.0) /opencv/modules/features2d/src/kaze/AKAZEFeatures.cpp:1192: error: (-215:Assertion failed) 0 <= kpts[i].class_id && kpts[i].class_id < static_cast<int>(evolution_.size()) in function 'Compute_Descriptors'
+
+            Aborted (core dumped)
+        */
+
+//NOTE 3:
+// SIFT detector with SIFT descriptor currently throwing this error:
+/*
+    root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+    #1 : LOAD IMAGE INTO BUFFER done
+    #2 : DETECT KEYPOINTS done
+    SIFT descriptor extraction in 107.006 ms
+    #3 : EXTRACT DESCRIPTORS done
+    #1 : LOAD IMAGE INTO BUFFER done
+    #2 : DETECT KEYPOINTS done
+    SIFT descriptor extraction in 78.1693 ms
+    #3 : EXTRACT DESCRIPTORS done
+    terminate called after throwing an instance of 'cv::Exception'
+    what():  OpenCV(4.1.0) /opencv/modules/core/src/batch_distance.cpp:282: error: (-215:Assertion failed) (type == CV_8U && dtype == CV_32S) || dtype == CV_32F in function 'batchDistance'
+
+    Aborted (core dumped)
+
+    SOLVED: https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
+    Can't use Hamming/Binary descriptor matching technique for SIFT and SURF. 
+    Have to set string descriptorType = "DES_HOG"; NOT string descriptorType = "DES_BINARY";
+*/
