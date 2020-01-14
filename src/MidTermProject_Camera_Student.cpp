@@ -66,7 +66,7 @@ int main(int argc, const char *argv[])
         {
             dataBuffer.erase(dataBuffer.end());
         }
-        cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
+        // cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
 
         /* DETECT IMAGE KEYPOINTS */
@@ -80,13 +80,14 @@ int main(int argc, const char *argv[])
         // string detectorType = "AKAZE";
         // string detectorType = "SIFT";
 
+        double keyTime = 0;
         if (detectorType.compare("SHITOMASI") == 0)
         {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
+            keyTime = detKeypointsShiTomasi(keypoints, imgGray, false);
         }
         else if (detectorType.compare("HARRIS") == 0)
         {
-            detKeypointsHarris(keypoints, imgGray, false);
+            keyTime = detKeypointsHarris(keypoints, imgGray, false);
         }
         else if ( (detectorType.compare("FAST") == 0) ||
                 (detectorType.compare("BRISK") == 0) ||
@@ -94,7 +95,7 @@ int main(int argc, const char *argv[])
                 (detectorType.compare("AKAZE") == 0) ||
                 (detectorType.compare("SIFT") == 0) )
         {
-            detKeypointsModern(keypoints, imgGray, detectorType, false);
+            keyTime = detKeypointsModern(keypoints, imgGray, detectorType, false);
         }
         else
         {
@@ -135,7 +136,7 @@ int main(int argc, const char *argv[])
 
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
-        cout << "#2 : DETECT KEYPOINTS done" << endl;
+        // cout << "#2 : DETECT KEYPOINTS done" << endl;
 
 
         /* EXTRACT KEYPOINT DESCRIPTORS */
@@ -149,11 +150,13 @@ int main(int argc, const char *argv[])
         // string descriptorType = "AKAZE"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         // Check NOTE 3
         // string descriptorType = "SIFT"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
+        keyTime += descKeypoints((dataBuffer.end() - 1)->keypoints, 
+                                (dataBuffer.end() - 1)->cameraImg, 
+                                descriptors, descriptorType);
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-        cout << "#3 : EXTRACT DESCRIPTORS done" << endl;
+        // cout << "#3 : EXTRACT DESCRIPTORS done" << endl;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
@@ -164,8 +167,8 @@ int main(int argc, const char *argv[])
             //string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
             string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
             // string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
-            // string selectorType = "SEL_KNN";       // SEL_NN, SEL_KNN
+            // string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+            string selectorType = "SEL_KNN";       // SEL_NN, SEL_KNN
 
             matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                              (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
@@ -174,7 +177,7 @@ int main(int argc, const char *argv[])
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
-            cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
+            // cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
             // visualize matches between current and previous image
             bVis = true;
@@ -187,8 +190,14 @@ int main(int argc, const char *argv[])
                                 matches, matchImg,
                                 cv::Scalar::all(-1), cv::Scalar::all(-1),
                                 vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-
                 std::cout << "----------" << std::endl;
+                std::cout << "Detector: " << detectorType << std::endl;
+                std::cout << "Descriptor: " << descriptorType << std::endl;
+                std::cout << "Total Keypoints: " << keypoints.size() << std::endl;
+                std::cout << "Matched Keypoints: " << matches.size() << std::endl;
+                std::cout << "Detection + Description Time (ms): " << keyTime*1000 << std::endl;
+                std::cout << "(Matching time not calculated/included)" << std::endl;
+                std::cout << "==========" << std::endl;
 
                 string windowName = "Matching keypoints between two camera images";
                 cv::namedWindow(windowName, 7);
