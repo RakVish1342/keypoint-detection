@@ -7,7 +7,7 @@ using namespace std;
 
 // Find best matches for keypoints in two camera images based on several matching methods
 void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::KeyPoint> &kPtsRef, cv::Mat &descSource, cv::Mat &descRef,
-                      std::vector<cv::DMatch> &matches, std::string descriptorType, std::string matcherType, std::string selectorType)
+                      std::vector<cv::DMatch> &matches, std::string descriptorCategory, std::string matcherType, std::string selectorType)
 {
     // configure matcher
     bool crossCheck = false;
@@ -18,18 +18,18 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
         int normType;
 
         // for SIFT
-        if (descriptorType.compare("DES_HOG") == 0)
+        if (descriptorCategory.compare("DES_HOG") == 0)
         {
             normType = cv::NORM_L2;
         }
         // for any other binary descriptors
-        else if (descriptorType.compare("DES_BINARY") == 0)
+        else if (descriptorCategory.compare("DES_BINARY") == 0)
         {
             normType = cv::NORM_HAMMING;
         }
         else 
         {
-            std::cout << "NOT SUPORTED" << std::endl;
+            std::cout << "matcherType NOT SUPPORTED" << std::endl;
         }
 
         matcher = cv::BFMatcher::create(normType, crossCheck);
@@ -47,7 +47,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     }
     else 
     {
-        std::cout << "NOT SUPORTED" << std::endl;
+        std::cout << "descriptorMatcher NOT SUPPORTED" << std::endl;
     }
 
 
@@ -111,9 +111,8 @@ double descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &des
     }
     else
     {
-       std::cout << "NOT SUPORTED" << std::endl;
+       std::cout << "descriptorType NOT SUPPORTED" << std::endl;
     }
-    
     // perform feature description
     double t = (double)cv::getTickCount();
     descriptor->compute(img, keypoints, descriptors);
