@@ -52,23 +52,33 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     }
 
 
-
-
     // perform matching task
     if (selectorType.compare("SEL_NN") == 0)
     { // nearest neighbor (best match)
 
-        std::cout << "###" << std::endl;
+        // std::cout << "###" << std::endl;
         // std::cout << matches.distance << std::endl;
         std::cout << descSource.size() << std::endl;
         std::cout << descRef.size() << std::endl;
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
-        std::cout << "###" << std::endl;
+        // std::cout << "###" << std::endl;
     }
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)
 
-        // ...
+        vector<vector<cv::DMatch>> knn_matches;
+        matcher->knnMatch(descSource, descRef, knn_matches, 2); // finds the 2 best matches
+        
+        double minDescDistRatio = 0.8;
+        for (auto it = knn_matches.begin(); it != knn_matches.end(); ++it)
+        {
+
+            if ((*it)[0].distance < minDescDistRatio * (*it)[1].distance)
+            {
+                matches.push_back((*it)[0]);
+            }
+        }
+        cout << "# keypoints removed by distRatio = " << knn_matches.size() - matches.size() << endl;
     }
 }
 
