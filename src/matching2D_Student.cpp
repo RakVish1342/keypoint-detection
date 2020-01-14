@@ -37,21 +37,14 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 
     else if (matcherType.compare("MAT_FLANN") == 0)
     {
-        // for SIFT
-        if (descriptorType.compare("DES_HOG") == 0)
-        {
-            matcher = cv::FlannBasedMatcher::create();
+        //std::cout << descSource.type() << std::endl;
+        if (descSource.type() != CV_32F || descRef.type() != CV_32F)
+        { // OpenCV bug workaround : convert binary descriptors to floating point due to a bug in current OpenCV implementation
+            descSource.convertTo(descSource, CV_32F);
+            descRef.convertTo(descRef, CV_32F);
+            //std::cout << ">>>>>>>>>>HIT" << std::endl;
         }
-        // for any other binary descriptorTypes
-        else if (descriptorType.compare("DES_BINARY") == 0)
-        {
-            const cv::Ptr<cv::flann::IndexParams>& indexParams = cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2);
-            matcher = cv::makePtr<cv::FlannBasedMatcher>(indexParams);
-        }
-        else 
-        {
-            std::cout << "NOT SUPORTED" << std::endl;
-        }
+        matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
     }
     else 
     {
@@ -66,6 +59,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
     { // nearest neighbor (best match)
 
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
+        //std::cout << "###" << std::endl;
     }
     else if (selectorType.compare("SEL_KNN") == 0)
     { // k nearest neighbors (k=2)
@@ -78,7 +72,7 @@ void matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::Key
 void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descriptors, string descriptorType)
 {
     // select appropriate descriptor
-    cv::Ptr<cv::DescriptorExtractor> extractor;
+    cv::Ptr<cv::DescriptorExtractor> descriptor;
     if (descriptorType.compare("BRISK") == 0)
     {
 
@@ -86,27 +80,27 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
         int octaves = 3;           // detection octaves (use 0 to do single scale)
         float patternScale = 1.0f; // apply this scale to the pattern used for sampling the neighbourhood of a keypoint.
 
-        extractor = cv::BRISK::create(threshold, octaves, patternScale);
+        descriptor = cv::BRISK::create(threshold, octaves, patternScale);
     }
     else if (descriptorType.compare("BRIEF") == 0)
     {
-        extractor = cv::xfeatures2d::BriefDescriptorExtractor::create();
+        descriptor = cv::xfeatures2d::BriefDescriptorExtractor::create();
     }
     else if (descriptorType.compare("ORB") == 0)
     {
-        extractor = cv::ORB::create();
+        descriptor = cv::ORB::create();
     }
     else if (descriptorType.compare("FREAK") == 0)
     {
-        extractor = cv::xfeatures2d::FREAK::create();
+        descriptor = cv::xfeatures2d::FREAK::create();
     }
     else if (descriptorType.compare("AKAZE") == 0)
     {
-        extractor = cv::AKAZE::create();
+        descriptor = cv::AKAZE::create();
     }
     else if (descriptorType.compare("SIFT") == 0)
     {
-        extractor = cv::xfeatures2d::SIFT::create();
+        descriptor = cv::xfeatures2d::SIFT::create();
     }
     else
     {
@@ -115,7 +109,7 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     
     // perform feature description
     double t = (double)cv::getTickCount();
-    extractor->compute(img, keypoints, descriptors);
+    descriptor->compute(img, keypoints, descriptors);
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
     cout << descriptorType << " descriptor extraction in " << 1000 * t / 1.0 << " ms" << endl;
 }

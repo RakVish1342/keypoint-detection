@@ -80,7 +80,7 @@ int main(int argc, const char *argv[])
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
         // string detectorType = "SHITOMASI";
-        // string detectorType = "HARRIS";
+        //  string detectorType = "HARRIS";
         // string detectorType = "FAST";
         // string detectorType = "BRISK";
         // string detectorType = "ORB";
@@ -160,7 +160,49 @@ int main(int argc, const char *argv[])
         cv::Mat descriptors;
         //string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         //string descriptorType = "BRIEF"; // BRIEF, ORB, FREAK, AKAZE, SIFT
-        string descriptorType = "FREAK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        // When SIFT detector and ORB Descriptor are used. OUT OF MEMORY runtime error appears!!
+        /*
+            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+            #1 : LOAD IMAGE INTO BUFFER done
+            #2 : DETECT KEYPOINTS done
+            terminate called after throwing an instance of 'cv::Exception'
+            what():  OpenCV(4.1.0) /opencv/modules/core/src/alloc.cpp:55: error: (-4:Insufficient memory) Failed to allocate 70166064384 bytes in function 'OutOfMemoryError'
+
+            Aborted (core dumped)
+        */
+        // When using ORB and ORB its fine
+        //string descriptorType = "ORB"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        // string descriptorType = "FREAK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        // Simlarly, when SIFT/ORB detectors are used with AKAZE descriptor, error appear
+        // Works fine when both are AKAZE 
+        /*
+            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+            #1 : LOAD IMAGE INTO BUFFER done
+            #2 : DETECT KEYPOINTS done
+            terminate called after throwing an instance of 'cv::Exception'
+            what():  OpenCV(4.1.0) /opencv/modules/features2d/src/kaze/AKAZEFeatures.cpp:1192: error: (-215:Assertion failed) 0 <= kpts[i].class_id && kpts[i].class_id < static_cast<int>(evolution_.size()) in function 'Compute_Descriptors'
+
+            Aborted (core dumped)
+        */
+        // string descriptorType = "AKAZE"; // BRIEF, ORB, FREAK, AKAZE, SIFT
+        //SIFT detector with SIFT descriptor currently throwing this error:
+        /*
+            root@42d94b09e2b4:/home/workspace/keypoint-detection/_build# ./2D_feature_tracking 
+            #1 : LOAD IMAGE INTO BUFFER done
+            #2 : DETECT KEYPOINTS done
+            SIFT descriptor extraction in 107.006 ms
+            #3 : EXTRACT DESCRIPTORS done
+            #1 : LOAD IMAGE INTO BUFFER done
+            #2 : DETECT KEYPOINTS done
+            SIFT descriptor extraction in 78.1693 ms
+            #3 : EXTRACT DESCRIPTORS done
+            terminate called after throwing an instance of 'cv::Exception'
+            what():  OpenCV(4.1.0) /opencv/modules/core/src/batch_distance.cpp:282: error: (-215:Assertion failed) (type == CV_8U && dtype == CV_32S) || dtype == CV_32F in function 'batchDistance'
+
+            Aborted (core dumped)
+
+        */
+        string descriptorType = "SIFT"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
         //// EOF STUDENT ASSIGNMENT
 
@@ -175,8 +217,8 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            // string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
+            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
+            //string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
             string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
             //string descriptorType = "DES_HOG"; // DES_BINARY, DES_HOG
             string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
