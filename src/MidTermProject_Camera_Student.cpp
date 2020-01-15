@@ -51,7 +51,11 @@ int main(int argc, const char *argv[])
     {
         for (string descriptorType : descVec)
         {    
+            // ClearBuffer o that when the type changes (from SHITOM,BRISK to SHITOM,BRIEF), mixed up 
+            // comparisons should not be done (previous SHITOM,BRISK compared with latest SHITOM,BRIEF)
+            dataBuffer.clear();
             for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
+            // for (size_t imgIndex = 0; imgIndex <= 3; imgIndex++)
             {
                 //Akaze as a Descriptor doesn't work with any detectors apart from itself
                 //SIFT and ORB go out of memory (Too many points picked up)
