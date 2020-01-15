@@ -30,12 +30,26 @@ Of all the keypoints detected in the image, only those present in the general ar
 
 ## ii. Keypoint Description
 
+To describe images a combination of HOG based and Binary description algorithms were implemented. They were:
+
+i. BRISK <br/>
+ii. BRIEF <br/>
+iii. ORB <br/>
+iv. FREAK <br/>
+v. AKAZE <br/>
+vi. SIFT <br/>
 
 ## iii. Keypoint Matching
 
+Once keypoints were detected and described matching techniques were employed to related the keypoints from one frame to another. Methods the following methods were used:
 
+i. Nearest Neighbour <br/>
+ii. k-Nearest Neightbour (with k=2) with Distance Ratio Threshold <br/>
+
+The distance ratio threshold helped reduce a large number of false positives.
+
+The following image shows various keypoints being related to each other between two images:
 <img src="images/keypoints_mapping.png" width="820" height="248" />
-
 
 
 ## iv. Performance Analysis
