@@ -9,11 +9,24 @@ iv. Performance Analysis <br/>
 
 
 ## i. Keypoint Detection
-Found like this:
+
+From the video feed of 10 images only two images are needed at any given point in time to match keypoints between frames. To maintain this, a simple two element ring buffer has been implemented. Each new image frame is pushed into a vector using ```.push_back()``` until the length of the vector is two. When the third and subsequent images are pushed into the vector the oldest image (the third element) is cleared using ```.clear(vec.end())```.
+
+Various keypoint detection algorithms were implemented from OpenCV. Corner based, gradient based and other keyppoint detection techniquies were used. They were the:
+
+i. Shi-Tomasi <br/>
+ii. Harris <br/>
+iii. FAST <br/>
+iv. BRISK <br/>
+v. ORB <br/>
+vi. AKAZE <br/>
+vii. SIFT <br/>
+
+
+Detection of keypoints produced images as follows. 
 <img src="images/keypoints.png" width="820" height="248" />
 
-Restricted to only car
-
+Of all the keypoints detected in the image, only those present in the general area in which the car appeared for the 10 frames of video were retained.
 
 ## ii. Keypoint Description
 
