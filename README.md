@@ -51,15 +51,24 @@ The distance ratio threshold helped reduce a large number of false positives.
 The following image shows various keypoints being related to each other between two images:
 <img src="images/keypoints_mapping.png" width="820" height="248" />
 
+ADD AN IMG WITH LESS FALSE POSITIVES?
+
 
 ## iv. Performance Analysis
 
-time, matched keypoints
+To compare the algorithms used, for each image the time taken to detect and describe the image was calculated, the total number of keypoints detected per image was calculated and the total number of keypoints matched between images was also calculated.
 
+These totals for all 10 images were stored in vectors and their average value over the 10 images was calculated and logged as seen below.
 
+Average time to detect and describe 10 images:
 
+ADDDDDD IMG
 
+Average number of matched keypoints between two images (over 10 images):
 
+ADDDDDD IMG
+
+From the above tables we can see that the FAST detector along with the BRISK, BRIEF or ORB perfomred the best. It produces results in a few milliseconds (<10ms) and consistently matched the most number of points (~100 keypoints).
 
 
 
