@@ -57,9 +57,9 @@ int main(int argc, const char *argv[])
     vector<int> tenImgKptsNum;
     vector<int> tenImgMatchedKptsNum;
     vector<double> tenImgDetDescTime;
-    std::ofstream outKptsNum("all_kpts_num.txt");
-    std::ofstream outKptsMatchedNum("all_kpts_matched_num.txt");
-    std::ofstream outDetDescTime("all_detdesc_time.txt");
+    std::ofstream outKptsNum("../src/all_kpts_num.txt");
+    std::ofstream outKptsMatchedNum("../src/all_kpts_matched_num.txt");
+    std::ofstream outDetDescTime("../src/all_detdesc_time.txt");
     vector<string> detVec = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descVec = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
     //Akaze as a Descriptor doesn't work with any detectors apart from itself
