@@ -68,7 +68,7 @@ Average number of matched keypoints between two images (over 10 images):
 
 ADDDDDD IMG
 
-From the above tables we can see that the FAST detector along with the BRISK, BRIEF or ORB perfomred the best. It produces results in a few milliseconds (<10ms) and consistently matched the most number of points (~100 keypoints).
+From the above tables we can see that the FAST detector along with the BRISK, BRIEF or ORB perfomred the best. It produces results in a few milliseconds (3 to 7 ms) and consistently matched the most number of points (100 to 200 keypoints).
 
 
 
