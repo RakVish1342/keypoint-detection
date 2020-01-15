@@ -12,11 +12,24 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/xfeatures2d/nonfree.hpp>
+#include <numeric>
 
 #include "dataStructures.h"
 #include "matching2D.hpp"
 
+
 using namespace std;
+
+template <typename typeT>
+double calcAvg(std::vector<typeT>& vec)
+{
+    double sum = 0;
+    for (typeT elem : vec)
+    {
+        sum += elem;
+    }
+    return sum/vec.size();
+} 
 
 /* MAIN PROGRAM */
 int main(int argc, const char *argv[])
@@ -41,6 +54,12 @@ int main(int argc, const char *argv[])
 
     bool bVis = false;            // visualize results
 
+    vector<int> tenImgKptsNum;
+    vector<int> tenImgMatchedKptsNum;
+    vector<double> tenImgDetDescTime;
+    std::ofstream outKptsNum("all_kpts_num.txt");
+    std::ofstream outKptsMatchedNum("all_kpts_matched_num.txt");
+    std::ofstream outDetDescTime("all_detdesc_time.txt");
     vector<string> detVec = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descVec = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
     //Akaze as a Descriptor doesn't work with any detectors apart from itself
@@ -54,8 +73,11 @@ int main(int argc, const char *argv[])
             // ClearBuffer o that when the type changes (from SHITOM,BRISK to SHITOM,BRIEF), mixed up 
             // comparisons should not be done (previous SHITOM,BRISK compared with latest SHITOM,BRIEF)
             dataBuffer.clear();
+            tenImgKptsNum.clear();
+            tenImgMatchedKptsNum.clear();
+            tenImgDetDescTime.clear();
             for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
-            // for (size_t imgIndex = 0; imgIndex <= 3; imgIndex++)
+            //for (size_t imgIndex = 0; imgIndex <= 3; imgIndex++)
             {
                 //Akaze as a Descriptor doesn't work with any detectors apart from itself
                 //SIFT and ORB go out of memory (Too many points picked up)
@@ -221,8 +243,6 @@ int main(int argc, const char *argv[])
                     (dataBuffer.end() - 1)->kptMatches = matches;
                     // cout << "#4 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
-                    // visualize matches between current and previous image
-                    bVis = true;
                     if (bVis)
                     {
                         cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
@@ -232,26 +252,41 @@ int main(int argc, const char *argv[])
                                         matches, matchImg,
                                         cv::Scalar::all(-1), cv::Scalar::all(-1),
                                         vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-                        std::cout << "----------" << std::endl;
-                        std::cout << "Detector: " << detectorType << std::endl;
-                        std::cout << "Descriptor: " << descriptorType << std::endl;
-                        std::cout << "Total Keypoints: " << keypoints.size() << std::endl;
-                        std::cout << "Matched Keypoints: " << matches.size() << std::endl;
-                        std::cout << "Detection + Description Time (ms): " << keyTime*1000 << std::endl;
-                        std::cout << "(Matching time not calculated/included)" << std::endl;
-                        std::cout << "==========" << std::endl;
-
                         string windowName = "Matching keypoints between two camera images";
                         cv::namedWindow(windowName, 7);
                         cv::imshow(windowName, matchImg);
                         cout << "Press key to continue to next image" << endl;
                         cv::waitKey(0); // wait for key to be pressed
                     }
-                    bVis = false;
-                }
+                    std::cout << "----------" << std::endl;
+                    std::cout << "Detector: " << detectorType << std::endl;
+                    std::cout << "Descriptor: " << descriptorType << std::endl;
+                    std::cout << "Total Keypoints: " << keypoints.size() << std::endl;
+                    std::cout << "Matched Keypoints: " << matches.size() << std::endl;
+                    std::cout << "Detection + Description Time (ms): " << keyTime*1000 << std::endl;
+                    std::cout << "(Matching time not calculated/included)" << std::endl;
+                    std::cout << "==========" << std::endl;
 
+                    tenImgKptsNum.push_back(keypoints.size());
+                    tenImgMatchedKptsNum.push_back(matches.size());
+                    tenImgDetDescTime.push_back(keyTime*1000);
+                } // eof ensure dataBuffer size greater than 1
             } // eof loop over all images
+            //Writing to file for plotting
+            // Cols (Descriptors): ["BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"] (6)
+            // Rows (Detectors): ["SHITOMASI"; "HARRIS"; "FAST"; "BRISK"; "ORB"; "AKAZE"; "SIFT"] (7)
+            // 7x6 matrix
+            // Cell Entries: avgValues over 10 frames
+            if(!tenImgKptsNum.empty())
+            {
+                outKptsNum << calcAvg(tenImgKptsNum) << ", ";
+                outKptsMatchedNum << calcAvg(tenImgMatchedKptsNum) << ", ";
+                outDetDescTime << calcAvg(tenImgDetDescTime) << ", ";            
+            }
         } // eof loop over all descriptors
+        outKptsNum << "\n";
+        outKptsMatchedNum << "\n";
+        outDetDescTime << "\n"; 
     } // eof loop over all detectors
 
     return 0;
