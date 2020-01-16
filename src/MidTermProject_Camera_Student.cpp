@@ -12,7 +12,6 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/xfeatures2d/nonfree.hpp>
-#include <numeric>
 
 #include "dataStructures.h"
 #include "matching2D.hpp"
@@ -85,7 +84,13 @@ int main(int argc, const char *argv[])
                      (detectorType.compare("SIFT")==0)&&(descriptorType.compare("ORB")==0) )
                 {
                     std::cout << "Skipping...";
-                    std::cout << "Using: " << detectorType << ", " << descriptorType << std::endl;    
+                    std::cout << "Using: " << detectorType << ", " << descriptorType << std::endl;
+                    outKptsNum << 0 << ", ";
+                    outKptsMatchedNum << 0 << ", ";
+                    outDetDescTime << 0 << ", ";
+                    outKptsNum << "NaN" << ", ";
+                    outKptsMatchedNum << "NaN" << ", ";
+                    outDetDescTime << "NaN" << ", ";                    
                     break;
                 }
 
