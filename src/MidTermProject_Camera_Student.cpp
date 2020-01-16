@@ -85,9 +85,6 @@ int main(int argc, const char *argv[])
                 {
                     std::cout << "Skipping...";
                     std::cout << "Using: " << detectorType << ", " << descriptorType << std::endl;
-                    outKptsNum << 0 << ", ";
-                    outKptsMatchedNum << 0 << ", ";
-                    outDetDescTime << 0 << ", ";
                     outKptsNum << "NaN" << ", ";
                     outKptsMatchedNum << "NaN" << ", ";
                     outDetDescTime << "NaN" << ", ";                    
